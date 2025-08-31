@@ -1,0 +1,102 @@
+[
+  {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1-202-555-0147",
+    "dateOfBirth": "1990-05-12",
+    "age": 35,
+    "gender": "Male",
+    "jurisdiction": "Alabama"
+  },
+  {
+    "firstName": "Emma",
+    "lastName": "Watson",
+    "email": "emma.watson@example.com",
+    "phone": "+1-202-555-0192",
+    "dateOfBirth": "1988-04-15",
+    "age": 37,
+    "gender": "Female",
+    "jurisdiction": "Alaska"
+  },
+  {
+    "firstName": "Liam",
+    "lastName": "Smith",
+    "email": "liam.smith@example.com",
+    "phone": "+44-20-7946-0958",
+    "dateOfBirth": "1995-09-21",
+    "age": 29,
+    "gender": "Male",
+    "jurisdiction": "Arizona"
+  },
+  {
+    "firstName": "Olivia",
+    "lastName": "Brown",
+    "email": "olivia.brown@example.com",
+    "phone": "+1-303-555-0123",
+    "dateOfBirth": "1992-11-03",
+    "age": 32,
+    "gender": "Female",
+    "jurisdiction": "Arkansas"
+  },
+  {
+    "firstName": "Ethan",
+    "lastName": "Johnson",
+    "email": "ethan.johnson@example.com",
+    "phone": "+1-415-555-0188",
+    "dateOfBirth": "1985-07-30",
+    "age": 40,
+    "gender": "Male",
+    "jurisdiction": "California"
+  },
+  {
+    "firstName": "Sophia",
+    "lastName": "Miller",
+    "email": "sophia.miller@example.com",
+    "phone": "+61-2-5550-1123",
+    "dateOfBirth": "1997-01-25",
+    "age": 28,
+    "gender": "Female",
+    "jurisdiction": "Colorado"
+  },
+  {
+    "firstName": "Noah",
+    "lastName": "Williams",
+    "email": "noah.williams@example.com",
+    "phone": "+1-202-555-0166",
+    "dateOfBirth": "1993-03-18",
+    "age": 32,
+    "gender": "Male",
+    "jurisdiction": "Connecticut"
+  },
+  {
+    "firstName": "Ava",
+    "lastName": "Taylor",
+    "email": "ava.taylor@example.com",
+    "phone": "+91-9876543210",
+    "dateOfBirth": "2000-06-11",
+    "age": 25,
+    "gender": "Female",
+    "jurisdiction": "Mumbai"
+  },
+  {
+    "firstName": "Mason",
+    "lastName": "Anderson",
+    "email": "mason.anderson@example.com",
+    "phone": "+1-404-555-0115",
+    "dateOfBirth": "1989-10-08",
+    "age": 36,
+    "gender": "Male",
+    "jurisdiction": "Delaware"
+  },
+  {
+    "firstName": "Isabella",
+    "lastName": "Moore",
+    "email": "isabella.moore@example.com",
+    "phone": "+49-30-5550-9987",
+    "dateOfBirth": "1998-12-22",
+    "age": 26,
+    "gender": "Female",
+    "jurisdiction": "District of Columbia"
+  }
+]

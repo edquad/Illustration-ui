@@ -1,0 +1,92 @@
+[
+  {
+    "label": "Salutation",
+    "fieldType": "SelectBox",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "First Name",
+    "fieldType": "TextField",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "Middle Name",
+    "fieldType": "TextField",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "Last Name",
+    "fieldType": "TextField",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "Suffix",
+    "fieldType": "SelectBox",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "Full Name",
+    "fieldType": "TextField",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "Gender",
+    "fieldType": "SelectBox",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "Date Of Birth",
+    "fieldType": "DatePicker",
+    "type": "date",
+    "required": true
+  },
+  {
+    "label": "Age",
+    "fieldType": "TextField",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "SSN/Tax ID",
+    "fieldType": "TextField",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "Email",
+    "fieldType": "TextField",
+    "type": "email",
+    "required": true
+  },
+  {
+    "label": "Phone Number",
+    "fieldType": "TextField",
+    "type": "tel",
+    "required": false
+  },
+  {
+    "label": "Mailing Address",
+    "fieldType": "TextField",
+    "type": "text",
+    "required": false
+  },
+  {
+    "label": "State",
+    "fieldType": "TextField",
+    "type": "text",
+    "required": true
+  },
+  {
+    "label": "Residence Address",
+    "fieldType": "TextField",
+    "type": "text",
+    "required": false
+  }
+]

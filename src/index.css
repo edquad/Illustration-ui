@@ -1,0 +1,114 @@
+body {
+  margin: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2b2929;
+}
+
+code {
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+.btn-sideBar {
+  background: rgba(22, 162, 213, 0.11) !important;
+  padding: 0px !important;
+}
+/* .btn-sideBar span.MuiTypography-root, */
+.btn-sideBar .MuiListItemText-root {
+  white-space: "nowrap" !important;
+  width: 80% !important;
+  text-overflow: ellipsis !important;
+}
+.btn-sideBar .MuiListItemText-root span.MuiTypography-root {
+  white-space: "nowrap" !important;
+  width: 100% !important;
+  text-overflow: ellipsis !important;
+  display: inline !important;
+}
+.btn-sideBar:hover {
+  background-color: #16a1d5 !important;
+}
+.btn-sideBar:hover span {
+  color: #ffffff !important;
+}
+.btn-sideBar:hover button,
+.fileItem-ctive button {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+.split {
+  display: flex;
+  height: calc(100%);
+}
+.split > .side {
+  /* overflow: auto; */
+  height: 100%;
+  /* padding: 5px; */
+  /* background-color: #f0f0f0; */
+  border-radius: 5px;
+  /* border: 1px solid #adadad; */
+}
+.gutter-horizontal {
+  width: 6px !important;
+  padding: 2px !important;
+  background-color: #dbdbdb !important;
+  cursor: col-resize;
+  border-radius: 10px !important;
+  border: 1px solid #bdbdbd !important;
+  margin: 0px 6px !important;
+}
+.fileItem-ctive {
+  background-color: #129fd4 !important;
+  color: #ffffff !important;
+}
+.btn-sideBar .MuiListItemIcon-root {
+  min-width: 35px;
+}
+.ceres-btn-Fill {
+  background: #129fd4 !important;
+}
+.application-form .css-1dqpc7h {
+  height: calc(100vh - 320px);
+  overflow-y: auto;
+  align-content: flex-start;
+  padding-top: 5px;
+}
+.MuiButton-outlinedPrimary {
+  color: #129fd4 !important;
+  border-color: #129fd4 !important;
+}
+
+.css-oewvya-MuiTabs-indicator,
+.MuiButton-containedPrimary {
+  background-color: #129fd4 !important;
+}
+/* .Mui-disabled {
+  background-color: #bbbbbb !important;
+  color: #ffffff !important;
+} */
+
+.MuiRadio-colorPrimary,
+.MuiIconButton-colorPrimary,
+.textColor {
+  color: #129fd4 !important;
+}
+
+.MuiButton-containedPrimary {
+  color: #ffffff !important;
+}
+.btnRounded {
+  border-radius: 50px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+.btnRounded {
+  border-radius: 50px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+.btnRounded:hover {
+  box-shadow: #494949 !important;
+  transform: translateY(-1px) !important;
+}
