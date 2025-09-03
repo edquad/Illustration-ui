@@ -4,6 +4,7 @@ import { useApp } from "../components/AppProvider";
 import { Layout } from "../components/layout";
 import Login from "../pages/Login";
 import Illustration from "../pages/Illustration";
+import Admin from "../pages/Admin";
 
 const RequireAuth = ({ children }) => {
   const { user } = useApp();
@@ -22,6 +23,7 @@ const AppRoutes = () => (
             <Routes>
               <Route path="/*" element={<Illustration />} />
               <Route path="/Illustration" element={<Illustration />} />
+              <Route path="/Admin" element={<Admin />} />
             </Routes>
           </Layout>
         </RequireAuth>

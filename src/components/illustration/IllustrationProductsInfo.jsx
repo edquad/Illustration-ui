@@ -23,6 +23,7 @@ import {
   ListItemText,
   OutlinedInput,
   FormControlLabel,
+  InputAdornment,
 } from "@mui/material";
 import dayjs from "dayjs";
 import AddIcon from "@mui/icons-material/Add";
@@ -81,6 +82,10 @@ const createNewGrid = (id) => ({
   glwbActivationAge: "",
   jointIndicator: "",
 });
+const formatNumber = (num) => {
+  if (num === null || num === undefined) return "";
+  return num.toLocaleString();
+};
 function IllustrationProductsInfo({ selectedState, personalInfo }) {
   const [termList, setTermList] = useState([]);
   const [withdrawalList, setWithdrawalList] = useState([]);
@@ -148,12 +153,12 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
     setCompareGrids((prev) =>
       prev.map((grid, i) => (i === index ? { ...grid, [field]: value } : grid))
     );
-    
+
     // If product type is being changed, disable auto-calculation until Calculate is clicked again
-    if (field === 'productType') {
-      setCalculationEnabled(prev => ({
+    if (field === "productType") {
+      setCalculationEnabled((prev) => ({
         ...prev,
-        [index]: false
+        [index]: false,
       }));
     }
   };
@@ -336,11 +341,11 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
       alert("Please select a product type before calculating");
       return;
     }
-    
+
     // Enable auto-calculation for this grid after first manual calculation
-    setCalculationEnabled(prev => ({
+    setCalculationEnabled((prev) => ({
       ...prev,
-      [index]: true
+      [index]: true,
     }));
   };
 
@@ -401,7 +406,7 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
     }, 1000); // 1 second delay after user stops scrolling
 
     return () => clearTimeout(timeoutId);
-  }, [compareGrids.map(grid => grid.val), calculationEnabled]);
+  }, [compareGrids.map((grid) => grid.val), calculationEnabled]);
   //=======================
   return (
     <>
@@ -431,8 +436,6 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
       </Box>
       <Box
         sx={{
-          height: "calc(100vh - 315px)",
-          overflow: "auto",
           width: "100%",
         }}
       >
@@ -449,18 +452,7 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
                   md: fullViewIndex === index ? 12 : 12 / compareGrids.length,
                 }}
               >
-                <Paper
-                  elevation={3}
-                  sx={{
-                    p: 3,
-                    pt: 0,
-                    transition: "all 0.3s ease",
-                    minHeight: `${compareGrids.length <= 2 && fullViewIndex === index && "calc(100vh - 330px)"}`,
-                    overflowY: "auto",
-                    position: "relative",
-                    height: "calc(100vh - 320px)",
-                  }}
-                >
+                <Paper elevation={3}>
                   {/* Header with Delete */}
                   <Box
                     sx={{
@@ -522,453 +514,465 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
                       )}
                     </div>
                   </Box>
-
-                  <Grid container spacing={3}>
-                    {/* === Left Column === */}
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <FormControl variant="outlined" sx={{ mb: 0 }} fullWidth>
-                        <InputLabel id="lineofBusiness-label">
-                          Products Type
-                        </InputLabel>
-                        <Select
+                  <Box
+                    sx={{
+                      p: 3,
+                      pt: 0,
+                      transition: "all 0.3s ease",
+                      minHeight: `${compareGrids.length <= 2 && fullViewIndex === index && "calc(100vh - 330px)"}`,
+                      overflowY: "auto",
+                      position: "relative",
+                      height: "calc(100vh - 320px)",
+                    }}
+                  >
+                    <Grid container spacing={3}>
+                      {/* === Left Column === */}
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <FormControl
+                          variant="outlined"
+                          sx={{ mb: 0 }}
+                          fullWidth
+                        >
+                          <InputLabel id="lineofBusiness-label">
+                            Products Type
+                          </InputLabel>
+                          <Select
+                            size="small"
+                            label="Products Type"
+                            value={grid.productType}
+                            onChange={(e) =>
+                              handleGridChange(
+                                index,
+                                "productType",
+                                e.target.value
+                              )
+                            }
+                          >
+                            <MenuItem value="">
+                              <em>Select</em>
+                            </MenuItem>
+                            {[
+                              ...new Set(
+                                productsInformation.map((p) => p.PRODUCT)
+                              ),
+                            ].map((product) => (
+                              <MenuItem key={product} value={product}>
+                                {product}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <FormControl
+                          variant="outlined"
+                          sx={{ mb: 0 }}
+                          fullWidth
+                        >
+                          <InputLabel id="FirstTerm-label">
+                            First Term
+                          </InputLabel>
+                          <Select
+                            size="small"
+                            label="First Term"
+                            value={grid.firstTerm}
+                            onChange={(e) =>
+                              handleGridChange(
+                                index,
+                                "firstTerm",
+                                e.target.value
+                              )
+                            }
+                          >
+                            {termList.map((state) => (
+                              <MenuItem
+                                key={state.TERM_DETAILS_VALUE}
+                                value={state.TERM_DETAILS_VALUE}
+                              >
+                                {state.TERM_DETAILS_VALUE}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <FormControl
+                          variant="outlined"
+                          sx={{ mb: 0 }}
+                          fullWidth
+                        >
+                          <InputLabel id="SecondTerm-label">
+                            Second Term
+                          </InputLabel>
+                          <Select
+                            size="small"
+                            label="Second Term"
+                            value={grid.secondTerm}
+                            onChange={(e) =>
+                              handleGridChange(
+                                index,
+                                "secondTerm",
+                                e.target.value
+                              )
+                            }
+                          >
+                            {termList.map((state) => (
+                              <MenuItem
+                                key={state.TERM_DETAILS_VALUE}
+                                value={state.TERM_DETAILS_VALUE}
+                              >
+                                {state.TERM_DETAILS_VALUE}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <FormControl
+                          variant="outlined"
+                          sx={{ mb: 0 }}
+                          fullWidth
+                        >
+                          <InputLabel id="WithdrawalType-label">
+                            Withdrawal Type
+                          </InputLabel>
+                          <Select
+                            size="small"
+                            label="Withdrawal Type"
+                            value={grid.withdrawalType}
+                            onChange={(e) =>
+                              handleGridChange(
+                                index,
+                                "withdrawalType",
+                                e.target.value
+                              )
+                            }
+                          >
+                            {withdrawalList.map((state) => (
+                              <MenuItem
+                                key={state.WITHDRAWAL_TYPE_ID}
+                                value={state.WITHDRAWAL_TYPE_VALUE}
+                              >
+                                {state.WITHDRAWAL_TYPE_VALUE}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <TextField
+                          fullWidth
+                          sx={{ mb: 0 }}
+                          label="Withdrawal Amount"
+                          type="text"
                           size="small"
-                          label="Products Type"
-                          value={grid.productType}
-                          onChange={(e) =>
+                          // value={grid.withdrawalAmount}
+                          value={formatNumber(grid.withdrawalAmount)}
+                          onChange={(e) => {
+                            const rawValue = e.target.value.replace(/,/g, "");
                             handleGridChange(
                               index,
-                              "productType",
-                              e.target.value
-                            )
-                          }
-                        >
-                          <MenuItem value="">
-                            <em>Select</em>
-                          </MenuItem>
-                          {[
-                            ...new Set(
-                              productsInformation.map((p) => p.PRODUCT)
+                              "withdrawalAmount",
+                              Number(rawValue)
+                            );
+                          }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                $
+                              </InputAdornment>
                             ),
-                          ].map((product) => (
-                            <MenuItem key={product} value={product}>
-                              {product}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <FormControl variant="outlined" sx={{ mb: 0 }} fullWidth>
-                        <InputLabel id="FirstTerm-label">First Term</InputLabel>
-                        <Select
+                          }}
+                        />
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <TextField
+                          fullWidth
+                          label="Withdrawal Fron Year"
+                          type="number"
                           size="small"
-                          label="First Term"
-                          value={grid.firstTerm}
-                          onChange={(e) =>
-                            handleGridChange(index, "firstTerm", e.target.value)
-                          }
-                        >
-                          {termList.map((state) => (
-                            <MenuItem
-                              key={state.TERM_DETAILS_VALUE}
-                              value={state.TERM_DETAILS_VALUE}
-                            >
-                              {state.TERM_DETAILS_VALUE}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <FormControl variant="outlined" sx={{ mb: 0 }} fullWidth>
-                        <InputLabel id="SecondTerm-label">
-                          Second Term
-                        </InputLabel>
-                        <Select
-                          size="small"
-                          label="Second Term"
-                          value={grid.secondTerm}
+                          sx={{ mb: 0 }}
+                          value={grid.withdrawalFromYear}
                           onChange={(e) =>
                             handleGridChange(
                               index,
-                              "secondTerm",
+                              "withdrawalFromYear",
                               e.target.value
-                            )
-                          }
-                        >
-                          {termList.map((state) => (
-                            <MenuItem
-                              key={state.TERM_DETAILS_VALUE}
-                              value={state.TERM_DETAILS_VALUE}
-                            >
-                              {state.TERM_DETAILS_VALUE}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <FormControl variant="outlined" sx={{ mb: 0 }} fullWidth>
-                        <InputLabel id="WithdrawalType-label">
-                          Withdrawal Type
-                        </InputLabel>
-                        <Select
-                          size="small"
-                          label="Withdrawal Type"
-                          value={grid.withdrawalType}
-                          onChange={(e) =>
-                            handleGridChange(
-                              index,
-                              "withdrawalType",
-                              e.target.value
-                            )
-                          }
-                        >
-                          {withdrawalList.map((state) => (
-                            <MenuItem
-                              key={state.WITHDRAWAL_TYPE_ID}
-                              value={state.WITHDRAWAL_TYPE_VALUE}
-                            >
-                              {state.WITHDRAWAL_TYPE_VALUE}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <TextField
-                        fullWidth
-                        sx={{ mb: 0 }}
-                        label="Withdrawal Amount"
-                        type="number"
-                        size="small"
-                        value={grid.withdrawalAmount}
-                        onChange={(e) =>
-                          handleGridChange(
-                            index,
-                            "withdrawalAmount",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <TextField
-                        fullWidth
-                        label="Withdrawal Fron Year"
-                        type="number"
-                        size="small"
-                        sx={{ mb: 0 }}
-                        value={grid.withdrawalFromYear}
-                        onChange={(e) =>
-                          handleGridChange(
-                            index,
-                            "withdrawalFromYear",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <TextField
-                        fullWidth
-                        label="Withdrawal To Year"
-                        type="number"
-                        size="small"
-                        sx={{ mb: 0 }}
-                        value={grid.withdrawalToYear}
-                        onChange={(e) =>
-                          handleGridChange(
-                            index,
-                            "withdrawalToYear",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <FormControl fullWidth>
-                        <InputLabel id="withdrawalFrequency-label">
-                          Withdrawal Frequency
-                        </InputLabel>
-                        <Select
-                          size="small"
-                          label="Withdrawal Frequency"
-                          value={grid.withdrawalFrequency}
-                          onChange={(e) =>
-                            handleGridChange(
-                              index,
-                              "withdrawalFrequency",
-                              e.target.value
-                            )
-                          }
-                        >
-                          <MenuItem value={"Monthly"}>Monthly</MenuItem>
-
-                          <MenuItem value={"Quarterly"}>Quarterly</MenuItem>
-                          <MenuItem value={"Half Yearly"}>Half Yearly</MenuItem>
-                          <MenuItem value={"Yearly"}>Yearly</MenuItem>
-                          <MenuItem value={"None"}>None</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <Box sx={{ mb: 0, px: 5 }}>
-                        <Slider
-                          marks={marks}
-                          step={10}
-                          min={MIN}
-                          max={MAX}
-                          value={grid.val}
-                          onChange={(e) =>
-                            handleGridChange(
-                              index,
-                              "val",
-                              Number(e.target.value)
                             )
                           }
                         />
-                      </Box>
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <TextField
-                        fullWidth
-                        label="Initial Contribution"
-                        value={grid.val}
-                        size="small"
-                        sx={{ mb: 0 }}
-                        onChange={(e) =>
-                          handleGridChange(index, "val", Number(e.target.value))
-                        }
-                        type="number"
-                        inputProps={{ min: MIN, max: MAX }}
-                      />
-                    </Grid>
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md:
-                          compareGrids.length === 2 && fullViewIndex !== index
-                            ? 6
-                            : compareGrids.length > 2 && fullViewIndex !== index
-                              ? 12
-                              : 3,
-                      }}
-                    >
-                      <TextField
-                        fullWidth
-                        label="Guarantee Period"
-                        sx={{ mb: 0 }}
-                        size="small"
-                        value={grid.guaranteePeriod}
-                        onChange={(e) =>
-                          handleGridChange(
-                            index,
-                            "guaranteePeriod",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </Grid>
-                    {grid.productType === "FIA" && (
-                      <>
-                        {/* ===Fixed Index Annuity (FIA) Allocation==== */}
-                        <Grid size={12}>
-                          <Grid container spacing={3}>
-                            <Grid size={6}>
-                              <Box>
-                                <Typography
-                                  variant="subtitle2"
-                                  className="textColor mb-0"
-                                >
-                                  Fixed Index Annuity (FIA) Allocation
-                                </Typography>
-                                <small>
-                                  Specify the allocation percentages for each
-                                  investment option. The total must equal 100%.
-                                </small>
-                              </Box>
-                            </Grid>
-                            <Grid size={6}>
-                              {(() => {
-                                const total = grid.fiaAllocation.reduce(
-                                  (sum, item) => sum + Number(item.value || 0),
-                                  0
-                                );
-                                const isValid = total === 100;
-                                return (
-                                  <>
-                                    <Alert
-                                      sx={{ p: 1, py: 0 }}
-                                      severity={isValid ? "success" : "error"}
-                                    >
-                                      Total Allocation: {total.toFixed(2)}%
-                                      <small className="block">
-                                        {isValid
-                                          ? "Perfect! Allocation equals 100%."
-                                          : "Must equal 100.00%"}
-                                      </small>
-                                    </Alert>
-                                  </>
-                                );
-                              })()}
-                            </Grid>
-                            <Grid
-                              size={{
-                                xs: 12,
-                                md:
-                                  compareGrids.length === 2 &&
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
                                   fullViewIndex !== index
-                                    ? 6
-                                    : compareGrids.length > 2 &&
-                                        fullViewIndex !== index
-                                      ? 12
-                                      : 6,
-                              }}
-                            >
-                              <FormControl fullWidth>
-                                <InputLabel id="FIA_Allocation">
-                                  (FIA) Allocation
-                                </InputLabel>
-                                <Select
-                                  label="(FIA) Allocation"
-                                  multiple
-                                  size="small"
-                                  value={grid.fiaAllocation.map(
-                                    (item) => item.name
-                                  )}
-                                  onChange={(e) =>
-                                    handleFIAAllocationChange(index, e)
-                                  }
-                                  input={
-                                    <OutlinedInput label="(FIA) Allocation" />
-                                  }
-                                  renderValue={(selected) =>
-                                    selected.join(", ")
-                                  }
-                                  MenuProps={MenuProps}
-                                >
-                                  {fiaAllocationList.map((item) => (
-                                    <MenuItem
-                                      key={item.FIA_ALLOCATION_VALUE}
-                                      value={item.FIA_ALLOCATION_VALUE}
-                                    >
-                                      <Checkbox
-                                        checked={grid.fiaAllocation.some(
-                                          (fa) =>
-                                            fa.name ===
-                                            item.FIA_ALLOCATION_VALUE
-                                        )}
-                                      />
-                                      <ListItemText
-                                        primary={item.FIA_ALLOCATION_VALUE}
-                                      />
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            </Grid>
-                            {grid.fiaAllocation.map((alloc, idx) => (
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <TextField
+                          fullWidth
+                          label="Withdrawal To Year"
+                          type="number"
+                          size="small"
+                          sx={{ mb: 0 }}
+                          value={grid.withdrawalToYear}
+                          onChange={(e) =>
+                            handleGridChange(
+                              index,
+                              "withdrawalToYear",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <FormControl fullWidth>
+                          <InputLabel id="withdrawalFrequency-label">
+                            Withdrawal Frequency
+                          </InputLabel>
+                          <Select
+                            size="small"
+                            label="Withdrawal Frequency"
+                            value={grid.withdrawalFrequency}
+                            onChange={(e) =>
+                              handleGridChange(
+                                index,
+                                "withdrawalFrequency",
+                                e.target.value
+                              )
+                            }
+                          >
+                            <MenuItem value={"Monthly"}>Monthly</MenuItem>
+
+                            <MenuItem value={"Quarterly"}>Quarterly</MenuItem>
+                            <MenuItem value={"Half Yearly"}>
+                              Half Yearly
+                            </MenuItem>
+                            <MenuItem value={"Yearly"}>Yearly</MenuItem>
+                            <MenuItem value={"None"}>None</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <Box sx={{ mb: 0, px: 5 }}>
+                          <Slider
+                            marks={marks}
+                            step={10}
+                            min={MIN}
+                            max={MAX}
+                            value={grid.val}
+                            onChange={(e) =>
+                              handleGridChange(
+                                index,
+                                "val",
+                                Number(e.target.value)
+                              )
+                            }
+                          />
+                        </Box>
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <TextField
+                          fullWidth
+                          label="Initial Contribution"
+                          value={formatNumber(grid.val)}
+                          size="small"
+                          sx={{ mb: 0 }}
+                          onChange={(e) => {
+                            const rawValue = e.target.value.replace(/,/g, "");
+                            handleGridChange(index, "val", Number(rawValue));
+                          }}
+                          type="text"
+                          inputProps={{
+                            min: MIN,
+                            max: MAX,
+                            inputMode: "numeric",
+                          }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                $
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      </Grid>
+                      <Grid
+                        size={{
+                          xs: 12,
+                          md:
+                            compareGrids.length === 2 && fullViewIndex !== index
+                              ? 6
+                              : compareGrids.length > 2 &&
+                                  fullViewIndex !== index
+                                ? 12
+                                : 3,
+                        }}
+                      >
+                        <TextField
+                          fullWidth
+                          label="Guarantee Period"
+                          sx={{ mb: 0 }}
+                          size="small"
+                          value={grid.guaranteePeriod}
+                          onChange={(e) =>
+                            handleGridChange(
+                              index,
+                              "guaranteePeriod",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </Grid>
+                      {grid.productType === "FIA" && (
+                        <>
+                          {/* ===Fixed Index Annuity (FIA) Allocation==== */}
+                          <Grid size={12}>
+                            <Grid container spacing={3}>
+                              <Grid size={6}>
+                                <Box>
+                                  <Typography
+                                    variant="subtitle2"
+                                    className="textColor mb-0"
+                                  >
+                                    Fixed Index Annuity (FIA) Allocation
+                                  </Typography>
+                                  <small>
+                                    Specify the allocation percentages for each
+                                    investment option. The total must equal
+                                    100%.
+                                  </small>
+                                </Box>
+                              </Grid>
+                              <Grid size={6}>
+                                {(() => {
+                                  const total = grid.fiaAllocation.reduce(
+                                    (sum, item) =>
+                                      sum + Number(item.value || 0),
+                                    0
+                                  );
+                                  const isValid = total === 100;
+                                  return (
+                                    <>
+                                      <Alert
+                                        sx={{ p: 1, py: 0 }}
+                                        severity={isValid ? "success" : "error"}
+                                      >
+                                        Total Allocation: {total.toFixed(2)}%
+                                        <small className="block">
+                                          {isValid
+                                            ? "Perfect! Allocation equals 100%."
+                                            : "Must equal 100.00%"}
+                                        </small>
+                                      </Alert>
+                                    </>
+                                  );
+                                })()}
+                              </Grid>
                               <Grid
                                 size={{
                                   xs: 12,
@@ -981,90 +985,50 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
                                         ? 12
                                         : 6,
                                 }}
-                                key={alloc.name}
                               >
-                                <TextField
-                                  fullWidth
-                                  type="number"
-                                  size="small"
-                                  label={`${alloc.name}`}
-                                  value={alloc.value}
-                                  onChange={(e) => {
-                                    const newVal = Number(e.target.value);
-                                    setCompareGrids((prev) =>
-                                      prev.map((g, gi) =>
-                                        gi === index
-                                          ? {
-                                              ...g,
-                                              fiaAllocation:
-                                                g.fiaAllocation.map((fa, fi) =>
-                                                  fi === idx
-                                                    ? { ...fa, value: newVal }
-                                                    : fa
-                                                ),
-                                            }
-                                          : g
-                                      )
-                                    );
-                                  }}
-                                />
-                              </Grid>
-                            ))}
-                          </Grid>
-                        </Grid>
-                        {/* ===Fixed Index Annuity (FIA) Allocation==== */}
-                        <Grid size={12}>
-                          <Grid container spacing={3}>
-                            <Grid
-                              size={{
-                                xs: 12,
-                              }}
-                            >
-                              <Box>
-                                <Typography
-                                  variant="subtitle2"
-                                  className="textColor mb-0"
-                                >
-                                  Guaranteed Lifetime Withdrawal Benefit (GLWB)
-                                </Typography>
-                                <small>
-                                  Configure GLWB options for this client.
-                                </small>
-                              </Box>
-                            </Grid>
-
-                            <Grid
-                              size={{
-                                xs: 12,
-                                md:
-                                  compareGrids.length === 2 &&
-                                  fullViewIndex !== index
-                                    ? 6
-                                    : compareGrids.length > 2 &&
-                                        fullViewIndex !== index
-                                      ? 12
-                                      : 3,
-                              }}
-                            >
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={grid.isGLWB}
-                                    // onChange={(e) => setIsGLWB(e.target.checked)}
+                                <FormControl fullWidth>
+                                  <InputLabel id="FIA_Allocation">
+                                    (FIA) Allocation
+                                  </InputLabel>
+                                  <Select
+                                    label="(FIA) Allocation"
+                                    multiple
+                                    size="small"
+                                    value={grid.fiaAllocation.map(
+                                      (item) => item.name
+                                    )}
                                     onChange={(e) =>
-                                      handleGridChange(
-                                        index,
-                                        "isGLWB",
-                                        e.target.checked
-                                      )
+                                      handleFIAAllocationChange(index, e)
                                     }
-                                  />
-                                }
-                                label="Enable GLWB"
-                              />
-                            </Grid>
-                            {grid.isGLWB && (
-                              <>
+                                    input={
+                                      <OutlinedInput label="(FIA) Allocation" />
+                                    }
+                                    renderValue={(selected) =>
+                                      selected.join(", ")
+                                    }
+                                    MenuProps={MenuProps}
+                                  >
+                                    {fiaAllocationList.map((item) => (
+                                      <MenuItem
+                                        key={item.FIA_ALLOCATION_VALUE}
+                                        value={item.FIA_ALLOCATION_VALUE}
+                                      >
+                                        <Checkbox
+                                          checked={grid.fiaAllocation.some(
+                                            (fa) =>
+                                              fa.name ===
+                                              item.FIA_ALLOCATION_VALUE
+                                          )}
+                                        />
+                                        <ListItemText
+                                          primary={item.FIA_ALLOCATION_VALUE}
+                                        />
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              {grid.fiaAllocation.map((alloc, idx) => (
                                 <Grid
                                   size={{
                                     xs: 12,
@@ -1075,118 +1039,231 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
                                         : compareGrids.length > 2 &&
                                             fullViewIndex !== index
                                           ? 12
-                                          : 3,
+                                          : 2,
                                   }}
+                                  key={alloc.name}
                                 >
                                   <TextField
-                                    label="GLWB Activation Age"
-                                    variant="outlined"
-                                    type="number"
                                     fullWidth
-                                    sx={{ mb: 1 }}
-                                    value={grid.glwbActivationAge}
-                                    onChange={(e) =>
-                                      handleGridChange(
-                                        index,
-                                        "glwbActivationAge",
-                                        e.target.value
-                                      )
-                                    }
+                                    type="number"
+                                    size="small"
+                                    inputProps={{
+                                      min: 0,
+                                      max: 100,
+                                    }}
+                                    InputProps={{
+                                      endAdornment: (
+                                        <InputAdornment position="end">
+                                          %
+                                        </InputAdornment>
+                                      ),
+                                    }}
+                                    label={`${alloc.name}`}
+                                    value={alloc.value}
+                                    onChange={(e) => {
+                                      const newVal = Number(e.target.value);
+                                      setCompareGrids((prev) =>
+                                        prev.map((g, gi) =>
+                                          gi === index
+                                            ? {
+                                                ...g,
+                                                fiaAllocation:
+                                                  g.fiaAllocation.map(
+                                                    (fa, fi) =>
+                                                      fi === idx
+                                                        ? {
+                                                            ...fa,
+                                                            value: newVal,
+                                                          }
+                                                        : fa
+                                                  ),
+                                              }
+                                            : g
+                                        )
+                                      );
+                                    }}
                                   />
                                 </Grid>
-                                <Grid
-                                  size={{
-                                    xs: 12,
-                                    md:
-                                      compareGrids.length === 2 &&
-                                      fullViewIndex !== index
-                                        ? 6
-                                        : compareGrids.length > 2 &&
-                                            fullViewIndex !== index
-                                          ? 12
-                                          : 3,
-                                  }}
-                                >
-                                  <FormControl>
-                                    <FormLabel id="demo-row-radio-buttons-group-label">
-                                      Joint Indicator
-                                    </FormLabel>
-                                    <RadioGroup
-                                      row
-                                      aria-labelledby="demo-row-radio-buttons-group-label"
-                                      name="row-radio-buttons-group"
-                                    >
-                                      <FormControlLabel
-                                        value="Single"
-                                        control={
-                                          <Radio
-                                            onChange={(e) =>
-                                              handleGridChange(
-                                                index,
-                                                "jointIndicator",
-                                                e.target.value
-                                              )
-                                            }
-                                          />
-                                        }
-                                        label="Single"
-                                      />
-                                      <FormControlLabel
-                                        value="Joint"
-                                        control={
-                                          <Radio
-                                            onChange={(e) =>
-                                              handleGridChange(
-                                                index,
-                                                "jointIndicator",
-                                                e.target.value
-                                              )
-                                            }
-                                          />
-                                        }
-                                        label="Joint"
-                                      />
-                                    </RadioGroup>
-                                  </FormControl>
-                                </Grid>
-                              </>
-                            )}
+                              ))}
+                            </Grid>
                           </Grid>
-                        </Grid>
-                      </>
-                    )}
-                  </Grid>
-                  <Divider sx={{ my: 2 }} />
-                  {/* =====BUTTON Create & Calculate==== */}
-                  <Box>
-                    <Box sx={{ p: 1, textAlign: "center" }}>
-                      <Button
-                        size="large"
-                        variant="contained"
-                        className="!rounded-full"
-                        endIcon={<ArrowForwardIosIcon />}
-                        onClick={() => handleCalculate(index)}
-                      >
-                        Create & Calculate
-                      </Button>
-                    </Box>
-                  </Box>
+                          {/* ===Fixed Index Annuity (FIA) Allocation==== */}
+                          <Grid size={12}>
+                            <Grid container spacing={3}>
+                              <Grid
+                                size={{
+                                  xs: 12,
+                                }}
+                              >
+                                <Box>
+                                  <Typography
+                                    variant="subtitle2"
+                                    className="textColor mb-0"
+                                  >
+                                    Guaranteed Lifetime Withdrawal Benefit
+                                    (GLWB)
+                                  </Typography>
+                                  <small>
+                                    Configure GLWB options for this client.
+                                  </small>
+                                </Box>
+                              </Grid>
 
-                  {grid.calculationResult && (
-                    <Box sx={{ mt: 3 }}>
-                      {grid.productType === "MYGA" ? (
-                        <MygaResultsDisplay
-                          data={grid.calculationResult}
-                          clientData={formData}
-                        />
-                      ) : (
-                        <FiaResultsDisplay
-                          data={grid.calculationResult}
-                          clientData={fiaFormData}
-                        />
+                              <Grid
+                                size={{
+                                  xs: 12,
+                                  md:
+                                    compareGrids.length === 2 &&
+                                    fullViewIndex !== index
+                                      ? 6
+                                      : compareGrids.length > 2 &&
+                                          fullViewIndex !== index
+                                        ? 12
+                                        : 3,
+                                }}
+                              >
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={grid.isGLWB}
+                                      // onChange={(e) => setIsGLWB(e.target.checked)}
+                                      onChange={(e) =>
+                                        handleGridChange(
+                                          index,
+                                          "isGLWB",
+                                          e.target.checked
+                                        )
+                                      }
+                                    />
+                                  }
+                                  label="Enable GLWB"
+                                />
+                              </Grid>
+                              {grid.isGLWB && (
+                                <>
+                                  <Grid
+                                    size={{
+                                      xs: 12,
+                                      md:
+                                        compareGrids.length === 2 &&
+                                        fullViewIndex !== index
+                                          ? 6
+                                          : compareGrids.length > 2 &&
+                                              fullViewIndex !== index
+                                            ? 12
+                                            : 3,
+                                    }}
+                                  >
+                                    <TextField
+                                      label="GLWB Activation Age"
+                                      variant="outlined"
+                                      type="number"
+                                      fullWidth
+                                      sx={{ mb: 1 }}
+                                      value={grid.glwbActivationAge}
+                                      onChange={(e) =>
+                                        handleGridChange(
+                                          index,
+                                          "glwbActivationAge",
+                                          e.target.value
+                                        )
+                                      }
+                                    />
+                                  </Grid>
+                                  <Grid
+                                    size={{
+                                      xs: 12,
+                                      md:
+                                        compareGrids.length === 2 &&
+                                        fullViewIndex !== index
+                                          ? 6
+                                          : compareGrids.length > 2 &&
+                                              fullViewIndex !== index
+                                            ? 12
+                                            : 3,
+                                    }}
+                                  >
+                                    <FormControl>
+                                      <FormLabel id="demo-row-radio-buttons-group-label">
+                                        Joint Indicator
+                                      </FormLabel>
+                                      <RadioGroup
+                                        row
+                                        aria-labelledby="demo-row-radio-buttons-group-label"
+                                        name="row-radio-buttons-group"
+                                      >
+                                        <FormControlLabel
+                                          value="Single"
+                                          control={
+                                            <Radio
+                                              onChange={(e) =>
+                                                handleGridChange(
+                                                  index,
+                                                  "jointIndicator",
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                          }
+                                          label="Single"
+                                        />
+                                        <FormControlLabel
+                                          value="Joint"
+                                          control={
+                                            <Radio
+                                              onChange={(e) =>
+                                                handleGridChange(
+                                                  index,
+                                                  "jointIndicator",
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                          }
+                                          label="Joint"
+                                        />
+                                      </RadioGroup>
+                                    </FormControl>
+                                  </Grid>
+                                </>
+                              )}
+                            </Grid>
+                          </Grid>
+                        </>
                       )}
+                    </Grid>
+                    <Divider sx={{ my: 2 }} />
+                    {/* =====BUTTON Create & Calculate==== */}
+                    <Box>
+                      <Box sx={{ p: 1, textAlign: "center" }}>
+                        <Button
+                          size="large"
+                          variant="contained"
+                          className="!rounded-full"
+                          endIcon={<ArrowForwardIosIcon />}
+                          onClick={() => handleCalculate(index)}
+                        >
+                          Create & Calculate
+                        </Button>
+                      </Box>
                     </Box>
-                  )}
+
+                    {grid.calculationResult && (
+                      <Box sx={{ mt: 3 }}>
+                        {grid.productType === "MYGA" ? (
+                          <MygaResultsDisplay
+                            data={grid.calculationResult}
+                            clientData={formData}
+                          />
+                        ) : (
+                          <FiaResultsDisplay
+                            data={grid.calculationResult}
+                            clientData={fiaFormData}
+                          />
+                        )}
+                      </Box>
+                    )}
+                  </Box>
                 </Paper>
               </Grid>
             );

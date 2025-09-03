@@ -22,11 +22,16 @@ const Login = () => {
     e.preventDefault();
     if (email && password) {
       const sessionId = `session_${Date.now()}`;
+      
+      // Check for admin credentials
+      const isAdmin = email === "vpande@gmail.com" && password === "vpande123";
+      
       setUser({
         id: "1",
         name: "Varun Pande",
         email: email,
         sessionId: sessionId,
+        role: isAdmin ? "admin" : "user"
       });
       navigate("/Illustration");
     } else {

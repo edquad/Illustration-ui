@@ -5,6 +5,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { NavLink, useLocation } from "react-router-dom";
 import ListItemButton from "@mui/material/ListItemButton";
 import DescriptionIcon from "@mui/icons-material/Description";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
@@ -23,18 +24,33 @@ import {
 const expandedWidth = 200;
 const collapsedWidth = 83;
 
-const navItems = [
-  { label: "Illustration", icon: <DescriptionIcon />, path: "/Illustration" },
-];
-
 const Sidebar = ({ onSelect, collapsed }) => {
   const theme = useTheme();
   const location = useLocation();
-  const { logout, logo, smLogo, colorPrimary } = useApp();
+  const { logout, logo, smLogo, colorPrimary, user } = useApp();
   const [expandedMenus, setExpandedMenus] = useState({});
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [activeSubItems, setActiveSubItems] = useState([]);
 
+  // Filter navigation items based on user role
+  const getNavItems = () => {
+    const baseItems = [
+      { label: "Illustration", icon: <DescriptionIcon />, path: "/Illustration" },
+    ];
+    
+    // Only show Admin link for admin users
+    if (user?.role === "admin") {
+      baseItems.push({
+        label: "Admin", 
+        icon: <AdminPanelSettingsIcon />, 
+        path: "/Admin" 
+      });
+    }
+    
+    return baseItems;
+  };
+
+  const navItems = getNavItems();
   const handleMenuToggle = (label) => {
     setExpandedMenus((prev) => ({
       ...prev,
@@ -292,35 +308,36 @@ const Sidebar = ({ onSelect, collapsed }) => {
           </List>
         </div>
         {/* Floating submenu for collapsed sidebar */}
-        {/* <Menu
-          anchorEl={menuAnchorEl}
-          open={Boolean(menuAnchorEl)}
-          onClose={() => setMenuAnchorEl(null)}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "left" }}
-          PaperProps={{
-            style: {
-              backgroundColor: "#fff",
-              boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
-              marginLeft: "5px",
-            },
-          }}
-        >
-          {activeSubItems.map((subItem) => (
-            <MenuItem
-              key={subItem.path}
-              onClick={() => {
-                onSelect(subItem.path);
-                setMenuAnchorEl(null);
-              }}
-              component={NavLink}
-              to={subItem.path}
-              sx={{ fontSize: "14px", color: "#333" }}
-            >
-              {subItem.label}
-            </MenuItem>
-          ))}
-        </Menu> */}
+        {/* Remove this line:
+        // const navItems = [
+        //   { label: "Illustration", icon: <DescriptionIcon />, path: "/Illustration" },
+        //   { label: "Admin", icon: <AdminPanelSettingsIcon />, path: "/Admin" },
+        // ];
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        PaperProps={{
+          style: {
+            backgroundColor: "#fff",
+            boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
+            marginLeft: "5px",
+          },
+        }}
+      >
+        {activeSubItems.map((subItem) => (
+          <MenuItem
+            key={subItem.path}
+            onClick={() => {
+              onSelect(subItem.path);
+              setMenuAnchorEl(null);
+            }}
+            component={NavLink}
+            to={subItem.path}
+            sx={{ fontSize: "14px", color: "#333" }}
+          >
+            {subItem.label}
+          </MenuItem>
+        ))}
+      </Menu> */}
 
         {/* Footer */}
         {/* {!collapsed ? (
