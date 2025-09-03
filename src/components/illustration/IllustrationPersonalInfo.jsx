@@ -29,7 +29,11 @@ import {
 
 // ✅ Define field categories
 
-function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, autofillData }) {
+function IllustrationPersonalInfo({
+  handleStateChange,
+  onPersonalInfoChange,
+  autofillData,
+}) {
   const [formData, setFormData] = useState({});
   const [statesList, setStatesList] = useState([]);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
@@ -149,10 +153,13 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         "Middle Name": autofillData.middle_name || "",
         "Last Name": autofillData.last_name || "",
         Suffix: autofillData.suffix || "",
-        "Date Of Birth": autofillData.birthday ? dayjs(autofillData.birthday) : null,
+        "Date Of Birth": autofillData.birthday
+          ? dayjs(autofillData.birthday)
+          : null,
         Age: autofillData.age || 0,
         Gender: autofillData.gender
-          ? autofillData.gender.charAt(0).toUpperCase() + autofillData.gender.slice(1).toLowerCase()
+          ? autofillData.gender.charAt(0).toUpperCase() +
+            autofillData.gender.slice(1).toLowerCase()
           : "",
         "SSN/Tax ID": autofillData.ssn ? formatSSN(autofillData.ssn) : "",
         Email: autofillData.email || "",
@@ -168,10 +175,10 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         mapped["Middle Name"],
         mapped["Last Name"],
         mapped.Suffix,
-      ].filter(part => part && part.trim() !== '');
+      ].filter((part) => part && part.trim() !== "");
       mapped["Full Name"] = nameParts.join(" ");
 
-      setFormData((prev) => ({ ...prev, ...mapped }))
+      setFormData((prev) => ({ ...prev, ...mapped }));
 
       //  Match existing client from contactListData
       if (autofillData.clientId) {
@@ -183,11 +190,11 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         }
       } else if (autofillData.clientName) {
         const matchedClient = contactListData.find(
-          (c) => c.FullName?.toLowerCase() === autofillData.clientName.toLowerCase()
+          (c) =>
+            c.FullName?.toLowerCase() === autofillData.clientName.toLowerCase()
         );
         if (matchedClient) {
           setSelectedClient(matchedClient);
-
         }
       }
     }
@@ -413,6 +420,7 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
     Suffix: ["Jr.", "Sr.", "II", "III"],
     Gender: ["Male", "Female", "Other"],
   };
+
   const handleExistingClientChange = (event, selectedClient) => {
     if (selectedClient) {
       const fieldToDataKeyMap = {
@@ -428,8 +436,9 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         "SSN/Tax ID": "SSN_TaxID",
         Email: "Email",
         "Phone Number": "PhoneNumber",
-        "Residence Address": "ResidenceAddress",
-        State: "State", // 🔹 special handling below
+        "Residence Address": "ResidenceAddress", // ✅ fix
+        State: "State",
+        "ZIP Code": "ZipCode", // in case you add later
       };
 
       const updatedData = {};
@@ -451,17 +460,30 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
           }
         }
       }
-      setFormData(updatedData);
+
+      // ✅ Autofill all fields
+      setFormData((prev) => ({ ...prev, ...updatedData }));
+
       if (updatedData["State"]) {
         handleProductAvailability(updatedData["State"]);
         handleStateChange(updatedData["State"]);
       }
+
       if (onPersonalInfoChange) {
         const personalInfoToSend = {
+          salutation: updatedData["Salutation"] || "",
           first_name: updatedData["First Name"] || "",
+          middle_name: updatedData["Middle Name"] || "",
           last_name: updatedData["Last Name"] || "",
+          suffix: updatedData["Suffix"] || "",
           birthday: updatedData["Date Of Birth"] || null,
           age: updatedData["Age"] || null,
+          gender: updatedData["Gender"] || "",
+          ssn: updatedData["SSN/Tax ID"] || "",
+          email: updatedData["Email"] || "",
+          phone: updatedData["Phone Number"] || "",
+          address: updatedData["Residence Address"] || "",
+          state: updatedData["State"] || "",
         };
         console.log("Sending personal info to parent:", personalInfoToSend);
         onPersonalInfoChange(personalInfoToSend);
@@ -470,6 +492,65 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
       setFormData({});
     }
   };
+
+  //==========================
+  // const handleExistingClientChange = (event, selectedClient) => {
+  //   if (selectedClient) {
+  //     const fieldToDataKeyMap = {
+  //       Salutation: "Salutation",
+  //       "First Name": "FirstName",
+  //       "Middle Name": "MiddleName",
+  //       "Last Name": "LastName",
+  //       Suffix: "Suffix",
+  //       "Full Name": "FullName",
+  //       Gender: "Gender",
+  //       "Date Of Birth": "DateOfBirth",
+  //       Age: "Age",
+  //       "SSN/Tax ID": "SSN_TaxID",
+  //       Email: "Email",
+  //       "Phone Number": "PhoneNumber",
+  //       "Residence Address": "ResidenceAddress",
+  //       State: "State", // 🔹 special handling below
+  //     };
+
+  //     const updatedData = {};
+  //     for (const [fieldLabel, dataKey] of Object.entries(fieldToDataKeyMap)) {
+  //       if (selectedClient[dataKey] !== undefined) {
+  //         if (fieldLabel === "Date Of Birth" && selectedClient[dataKey]) {
+  //           updatedData[fieldLabel] = dayjs(selectedClient[dataKey]);
+  //         } else if (fieldLabel === "State") {
+  //           const matchedState = statesList.find(
+  //             (s) =>
+  //               s.STATE_CODE === selectedClient[dataKey] ||
+  //               s.STATE_NAME === selectedClient[dataKey]
+  //           );
+  //           updatedData[fieldLabel] = matchedState
+  //             ? matchedState.STATE_CODE
+  //             : selectedClient[dataKey];
+  //         } else {
+  //           updatedData[fieldLabel] = selectedClient[dataKey];
+  //         }
+  //       }
+  //     }
+  //     setFormData(updatedData);
+  //     if (updatedData["State"]) {
+  //       handleProductAvailability(updatedData["State"]);
+  //       handleStateChange(updatedData["State"]);
+  //     }
+  //     if (onPersonalInfoChange) {
+  //       const personalInfoToSend = {
+  //         first_name: updatedData["First Name"] || "",
+  //         last_name: updatedData["Last Name"] || "",
+  //         birthday: updatedData["Date Of Birth"] || null,
+  //         age: updatedData["Age"] || null,
+  //       };
+  //       console.log("Sending personal info to parent:", personalInfoToSend);
+  //       onPersonalInfoChange(personalInfoToSend);
+  //     }
+  //   } else {
+  //     setFormData({});
+  //   }
+  // };
   const renderField = (field) => {
     // Special handling for the Residence Address field
     if (field.label === "Residence Address") {
@@ -758,9 +839,9 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         <Autocomplete
           disablePortal
           options={contactListData}
-           value={selectedClient}
+          value={selectedClient}
           getOptionLabel={(option) => option.FullName || ""}
-          // onChange={handleExistingClientChange}
+          //onChange={handleExistingClientChange}
           onChange={(event, newValue) => {
             setSelectedClient(newValue);
             handleExistingClientChange(event, newValue);
@@ -774,62 +855,6 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         <Divider>
           <Chip label="OR" size="small" />
         </Divider>
-
-        {/* <Grid container spacing={2}>
-          {Object.entries(fieldCategories).map(([category, labels]) => (
-            <Grid
-              key={category}
-              item
-              xs={12}
-              md={
-                category === "Address Details" ||
-                category === "Contact Information"
-                  ? 6
-                  : 12
-              }
-            >
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Avatar
-                  sx={{
-                    p: 1,
-                    mr: 1,
-                    width: 40,
-                    height: 40,
-                    bgcolor: "#129fd4",
-                  }}
-                >
-                  {categoryIcons[category]}
-                </Avatar>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 500,
-                    color: "#585858",
-                    wordBreak: "break-all",
-                  }}
-                >
-                  {category}
-                </Typography>
-              </Box>
-
-              <Grid container spacing={2}>
-                {labels.map((label) => {
-                  const field = IllustrationField.find(
-                    (f) => f.label === label
-                  );
-                  return (
-                    field && (
-                      <Grid item xs={12} key={field.label}>
-                        {renderField(field)}
-                      </Grid>
-                    )
-                  );
-                })}
-              </Grid>
-            </Grid>
-          ))}
-        </Grid> */}
-
         {/* ========================== */}
 
         {Object.entries(fieldCategories).map(([category, labels]) => (
