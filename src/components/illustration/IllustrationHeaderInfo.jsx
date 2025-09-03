@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { useApp } from "../AppProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
-function IllustrationHeaderInfo() {
+function IllustrationHeaderInfo({ handleBasicInfo }) {
   const { user } = useApp();
   const [illustrationNumber, setIllustrationNumber] = useState(null);
   const generateIllustrationNumber = () => {
@@ -13,6 +13,14 @@ function IllustrationHeaderInfo() {
       "0"
     );
     setIllustrationNumber(`CLIN-${illustrationVal}`);
+    if (handleBasicInfo) {
+      const basicInfo = {
+        Agent_Name: user?.name,
+        Illustration_Number: `CLIN-${illustrationVal}`,
+        llustration_Date: dayjs(),
+      };
+      handleBasicInfo(basicInfo);
+    }
   };
   useEffect(() => {
     generateIllustrationNumber();

@@ -413,7 +413,8 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
     Suffix: ["Jr.", "Sr.", "II", "III"],
     Gender: ["Male", "Female", "Other"],
   };
-  const handleExistingClientChange = (event, selectedClient) => {
+
+   const handleExistingClientChange = (event, selectedClient) => {
     if (selectedClient) {
       const fieldToDataKeyMap = {
         Salutation: "Salutation",
@@ -428,8 +429,9 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         "SSN/Tax ID": "SSN_TaxID",
         Email: "Email",
         "Phone Number": "PhoneNumber",
-        "Residence Address": "ResidenceAddress",
-        State: "State", // 🔹 special handling below
+        "Residence Address": "ResidenceAddress", // ✅ fix
+        State: "State",
+        "ZIP Code": "ZipCode", // in case you add later
       };
 
       const updatedData = {};
@@ -451,17 +453,30 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
           }
         }
       }
-      setFormData(updatedData);
+
+      // ✅ Autofill all fields
+      setFormData((prev) => ({ ...prev, ...updatedData }));
+
       if (updatedData["State"]) {
         handleProductAvailability(updatedData["State"]);
         handleStateChange(updatedData["State"]);
       }
+
       if (onPersonalInfoChange) {
         const personalInfoToSend = {
+          salutation: updatedData["Salutation"] || "",
           first_name: updatedData["First Name"] || "",
+          middle_name: updatedData["Middle Name"] || "",
           last_name: updatedData["Last Name"] || "",
+          suffix: updatedData["Suffix"] || "",
           birthday: updatedData["Date Of Birth"] || null,
           age: updatedData["Age"] || null,
+          gender: updatedData["Gender"] || "",
+          ssn: updatedData["SSN/Tax ID"] || "",
+          email: updatedData["Email"] || "",
+          phone: updatedData["Phone Number"] || "",
+          address: updatedData["Residence Address"] || "",
+          state: updatedData["State"] || "",
         };
         console.log("Sending personal info to parent:", personalInfoToSend);
         onPersonalInfoChange(personalInfoToSend);
@@ -470,6 +485,67 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
       setFormData({});
     }
   };
+
+
+  // const handleExistingClientChange = (event, selectedClient) => {
+  //   if (selectedClient) {
+  //     const fieldToDataKeyMap = {
+  //       Salutation: "Salutation",
+  //       "First Name": "FirstName",
+  //       "Middle Name": "MiddleName",
+  //       "Last Name": "LastName",
+  //       Suffix: "Suffix",
+  //       "Full Name": "FullName",
+  //       Gender: "Gender",
+  //       "Date Of Birth": "DateOfBirth",
+  //       Age: "Age",
+  //       "SSN/Tax ID": "SSN_TaxID",
+  //       Email: "Email",
+  //       "Phone Number": "PhoneNumber",
+  //       "Residence Address": "ResidenceAddress",
+  //       State: "State", // 🔹 special handling below
+  //     };
+
+  //     const updatedData = {};
+  //     for (const [fieldLabel, dataKey] of Object.entries(fieldToDataKeyMap)) {
+  //       if (selectedClient[dataKey] !== undefined) {
+  //         if (fieldLabel === "Date Of Birth" && selectedClient[dataKey]) {
+  //           updatedData[fieldLabel] = dayjs(selectedClient[dataKey]);
+  //         } else if (fieldLabel === "State") {
+  //           const matchedState = statesList.find(
+  //             (s) =>
+  //               s.STATE_CODE === selectedClient[dataKey] ||
+  //               s.STATE_NAME === selectedClient[dataKey]
+  //           );
+  //           updatedData[fieldLabel] = matchedState
+  //             ? matchedState.STATE_CODE
+  //             : selectedClient[dataKey];
+  //         } else {
+  //           updatedData[fieldLabel] = selectedClient[dataKey];
+  //         }
+  //       }
+  //     }
+  //     setFormData(updatedData);
+  //     if (updatedData["State"]) {
+  //       handleProductAvailability(updatedData["State"]);
+  //       handleStateChange(updatedData["State"]);
+  //     }
+  //     if (onPersonalInfoChange) {
+  //       const personalInfoToSend = {
+  //         first_name: updatedData["First Name"] || "",
+  //         last_name: updatedData["Last Name"] || "",
+  //         birthday: updatedData["Date Of Birth"] || null,
+  //         age: updatedData["Age"] || null,
+  //       };
+  //       console.log("Sending personal info to parent:", personalInfoToSend);
+  //       onPersonalInfoChange(personalInfoToSend);
+  //     }
+  //   } else {
+  //     setFormData({});
+  //   }
+  // };
+
+
   const renderField = (field) => {
     // Special handling for the Residence Address field
     if (field.label === "Residence Address") {

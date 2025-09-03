@@ -8,6 +8,7 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  LinearProgress,
 } from "@mui/material";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import TabPanel from "./TabPanel";
@@ -16,30 +17,77 @@ import IllustrationHeaderInfo from "./IllustrationHeaderInfo";
 import IllustrationProductsInfo from "./IllustrationProductsInfo";
 import Chatbot from "../chatbot/chatbot";
 import dayjs from "dayjs";
-
+import { createClientInfo } from "../../queries/IllustrationQueries";
 function IllustrationInfoForm() {
   const [activeTab, setActiveTab] = useState(1);
   const [selectedState, setSelectedState] = useState(null);
   const [isNavVisible, setIsNavVisible] = useState(true);
   const scrollContainerRef = useRef(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showPersonalLoader, setshowPersonalLoader] = useState(false);
+  const [showProductsLoader, setshowProductsLoader] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
   const [showValidationAlert, setShowValidationAlert] = useState(false);
-   const [selectedClient, setSelectedClient] = useState(null);
+  // const [selectedClient, setSelectedClient] = useState(null);
   //==================================
-
+  const [basicInfo, setBasicInfo] = useState({
+    Agent_Name: "",
+    Illustration_Number: "",
+    llustration_Date: "",
+  });
   // Add personal information state
   const [personalInfo, setPersonalInfo] = useState({
+    Agent_Name: "",
+    Illustration_Number: "",
+    llustration_Date: "",
+    Salutation: "",
     first_name: "",
     last_name: "",
     birthday: null,
     age: 0,
   });
-
+  //console.log("selectedState", selectedState);
+  const InsertPersonalInfo = async () => {
+    try {
+      const fullName = [
+        personalInfo.salutation,
+        personalInfo.first_name,
+        personalInfo.middle_name,
+        personalInfo.last_name,
+        personalInfo.suffix,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const params = {
+        ILLUSTRATION_ID: basicInfo.Illustration_Number,
+        AGENT_NAME: basicInfo.Agent_Name,
+        ILLUSTRATION_DATE: basicInfo.llustration_Date.format("MM/DD/YYYY"),
+        SALUTATION: personalInfo.salutation,
+        FIRST_NAME: personalInfo.first_name,
+        MIDDLE_NAME: personalInfo.middle_name,
+        LAST_NAME: personalInfo.last_name,
+        SUFFIX: personalInfo.suffix,
+        FULL_NAME: fullName,
+        GENDER: personalInfo.gender,
+        DATE_OF_BIRTH: personalInfo.birthday.format("MM/DD/YYYY"),
+        AGE: personalInfo.age,
+        SSN_TAX_ID: personalInfo.ssn,
+        RESIDENCE_ADDRESS: personalInfo.address,
+        STATE: personalInfo.state,
+        EMAIL: personalInfo.email,
+        PHONE: personalInfo.phone,
+      };
+      await createClientInfo(params);
+      // if (result) {
+      //   //setProductsInformation(result);
+      // }
+    } catch (error) {
+      console.error("Error handling:", error);
+    }
+  };
   // Enhanced validation function to check current form values
   // More robust validation function
   const validatePersonalInfo = () => {
-    debugger;
     const missingFields = [];
 
     // Debug current values
@@ -108,17 +156,19 @@ function IllustrationInfoForm() {
 
       // scrolling down
       if (e.deltaY > 0 && activeTab === 1) {
-        
         const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5;
         if (isAtBottom && validatePersonalInfo()) {
+          setshowProductsLoader(true);
           setIsTransitioning(true);
           setActiveTab(2);
+          InsertPersonalInfo();
           setTimeout(() => {
             if (scrollContainerRef.current) {
               scrollContainerRef.current.scrollTop = 0;
             }
+            setshowProductsLoader(false);
             setIsTransitioning(false);
-          }, 150);
+          }, 3000);
         }
       }
 
@@ -126,6 +176,7 @@ function IllustrationInfoForm() {
       if (e.deltaY < 0 && activeTab === 2) {
         const isAtTop = scrollTop <= 5;
         if (isAtTop) {
+          setshowPersonalLoader(true);
           setIsTransitioning(true);
           setActiveTab(1);
           setSelectedState(null);
@@ -140,8 +191,9 @@ function IllustrationInfoForm() {
               const c = scrollContainerRef.current;
               c.scrollTop = c.scrollHeight - c.clientHeight - 50;
             }
+            setshowPersonalLoader(false);
             setIsTransitioning(false);
-          }, 150);
+          }, 3000);
         }
       }
     };
@@ -166,19 +218,19 @@ function IllustrationInfoForm() {
       // Name fields
       first_name:
         autofillData["First Name"] ||
-        autofillData.FirstName ||    
+        autofillData.FirstName ||
         autofillData.first_name ||
         "",
 
       middle_name:
         autofillData["Middle Name"] ||
-        autofillData.MiddleName ||   
+        autofillData.MiddleName ||
         autofillData.middle_name ||
         "",
 
       last_name:
         autofillData["Last Name"] ||
-        autofillData.LastName ||     
+        autofillData.LastName ||
         autofillData.last_name ||
         "",
 
@@ -190,7 +242,7 @@ function IllustrationInfoForm() {
 
       birthday: autofillData["Date Of Birth"]
         ? dayjs(autofillData["Date Of Birth"])
-        : autofillData.DateOfBirth    
+        : autofillData.DateOfBirth
           ? dayjs(autofillData.DateOfBirth)
           : autofillData.birthday
             ? dayjs(autofillData.birthday)
@@ -198,34 +250,33 @@ function IllustrationInfoForm() {
 
       age: autofillData.Age || autofillData.age || 0,
 
-      gender:
-        autofillData.Gender
-          ? autofillData.Gender.charAt(0).toUpperCase() +
+      gender: autofillData.Gender
+        ? autofillData.Gender.charAt(0).toUpperCase() +
           autofillData.Gender.slice(1).toLowerCase()
-          : autofillData.gender
-            ? autofillData.gender.charAt(0).toUpperCase() +
+        : autofillData.gender
+          ? autofillData.gender.charAt(0).toUpperCase() +
             autofillData.gender.slice(1).toLowerCase()
-            : "",
+          : "",
 
       email: autofillData.Email || autofillData.email || "",
 
       phone:
         autofillData["Phone Number"] ||
-        autofillData.PhoneNumber ||  
+        autofillData.PhoneNumber ||
         autofillData.Phone ||
         autofillData.phone ||
         "",
 
       address:
         autofillData["Residence Address"] ||
-        autofillData.ResidenceAddress || 
+        autofillData.ResidenceAddress ||
         autofillData.Address ||
         autofillData.address ||
         "",
 
       ssn:
         autofillData["SSN/Tax ID"] ||
-        autofillData.SSN_TaxID ||    
+        autofillData.SSN_TaxID ||
         autofillData["Tax ID"] ||
         autofillData.SSN ||
         autofillData.ssn ||
@@ -235,21 +286,20 @@ function IllustrationInfoForm() {
       state: autofillData.State || autofillData.state || "",
 
       zip:
-        autofillData["ZIP Code"] ||
-        autofillData.Zip ||
-        autofillData.zip ||
-        "",
+        autofillData["ZIP Code"] || autofillData.Zip || autofillData.zip || "",
 
       clientId: autofillData.ClientId || null,
-      clientName: autofillData.ClientName || ""
+      clientName: autofillData.ClientName || "",
     };
     setPersonalInfo((prev) => ({ ...prev, ...mappedData }));
 
-    if (mappedData.clientId) {
-      setSelectedClient(mappedData.clientId);
-    }
+    // if (mappedData.clientId) {
+    //   setSelectedClient(mappedData.clientId);
+    // }
   };
-
+  const handleBasicInfo = (info) => {
+    setBasicInfo(info);
+  };
   const handlePersonalInfoChange = (info) => {
     setPersonalInfo(info);
   };
@@ -257,6 +307,9 @@ function IllustrationInfoForm() {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
     setIsTransitioning(true);
+    if (newValue === 2) {
+      InsertPersonalInfo();
+    }
     setTimeout(() => {
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTop = 0;
@@ -279,7 +332,7 @@ function IllustrationInfoForm() {
         Illustration
       </Typography>
 
-      <IllustrationHeaderInfo />
+      <IllustrationHeaderInfo handleBasicInfo={handleBasicInfo} />
       <Box
         sx={{
           bgcolor: "background.paper",
@@ -354,7 +407,9 @@ function IllustrationInfoForm() {
               <Tab
                 label="Products"
                 value={2}
-                disabled={!selectedState && !personalInfo.birthday}
+                disabled={
+                  selectedState == null || personalInfo.birthday == null
+                }
               />
             </Tabs>
           )}
@@ -370,6 +425,19 @@ function IllustrationInfoForm() {
             overflowY: "auto",
           }}
         >
+          {/* {(showPersonalLoader || showProductsLoader) && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: "25%",
+                width: "60%",
+                zIndex: 10,
+              }}
+            >
+              <LinearProgress />
+            </Box>
+          )} */}
           <TabPanel value={activeTab} index={1}>
             <IllustrationPersonalInfo
               handleStateChange={handleStateChange}

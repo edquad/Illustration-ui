@@ -98,3 +98,19 @@ export async function getFIACalc(params) {
   }
   return null;
 }
+
+export async function createClientInfo(params) {
+  console.log("My_params", params);
+  if (params != null) {
+    try {
+      const response = await postRequest(
+        `${config.baseURL}api/clients/client-info`,
+        params
+      );
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+  return null;
+}
