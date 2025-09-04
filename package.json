@@ -19,7 +19,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
-    "@mui/x-date-pickers": "^8.10.2",
+    "@mui/x-date-pickers": "^8.11.1",
     "@react-icons/all-files": "^4.1.0",
     "@tailwindcss/vite": "^4.1.12",
     "@toolpad/core": "^0.16.0",
