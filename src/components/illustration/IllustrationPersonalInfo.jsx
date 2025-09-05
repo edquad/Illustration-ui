@@ -29,7 +29,11 @@ import {
 
 // ✅ Define field categories
 
-function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, autofillData }) {
+function IllustrationPersonalInfo({
+  handleStateChange,
+  onPersonalInfoChange,
+  autofillData,
+}) {
   const [formData, setFormData] = useState({});
   const [statesList, setStatesList] = useState([]);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
@@ -149,10 +153,13 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         "Middle Name": autofillData.middle_name || "",
         "Last Name": autofillData.last_name || "",
         Suffix: autofillData.suffix || "",
-        "Date Of Birth": autofillData.birthday ? dayjs(autofillData.birthday) : null,
+        "Date Of Birth": autofillData.birthday
+          ? dayjs(autofillData.birthday)
+          : null,
         Age: autofillData.age || 0,
         Gender: autofillData.gender
-          ? autofillData.gender.charAt(0).toUpperCase() + autofillData.gender.slice(1).toLowerCase()
+          ? autofillData.gender.charAt(0).toUpperCase() +
+            autofillData.gender.slice(1).toLowerCase()
           : "",
         "SSN/Tax ID": autofillData.ssn ? formatSSN(autofillData.ssn) : "",
         Email: autofillData.email || "",
@@ -168,10 +175,10 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         mapped["Middle Name"],
         mapped["Last Name"],
         mapped.Suffix,
-      ].filter(part => part && part.trim() !== '');
+      ].filter((part) => part && part.trim() !== "");
       mapped["Full Name"] = nameParts.join(" ");
 
-      setFormData((prev) => ({ ...prev, ...mapped }))
+      setFormData((prev) => ({ ...prev, ...mapped }));
 
       //  Match existing client from contactListData
       if (autofillData.clientId) {
@@ -183,11 +190,11 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         }
       } else if (autofillData.clientName) {
         const matchedClient = contactListData.find(
-          (c) => c.FullName?.toLowerCase() === autofillData.clientName.toLowerCase()
+          (c) =>
+            c.FullName?.toLowerCase() === autofillData.clientName.toLowerCase()
         );
         if (matchedClient) {
           setSelectedClient(matchedClient);
-
         }
       }
     }
@@ -366,19 +373,14 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
     }
 
     // Pass personal info to parent
-    // if (onPersonalInfoChange) {
-    //   const personalInfoToSend = {
-    //     first_name: updatedFormData["First Name"] || "",
-    //     last_name: updatedFormData["Last Name"] || "",
-    //     birthday: updatedFormData["Date Of Birth"] || null,
-    //     age: age,
-    //   };
+
     if (onPersonalInfoChange) {
       const personalInfoToSend = {
         salutation: updatedFormData["Salutation"] || "",
         first_name: updatedFormData["First Name"] || "",
         middle_name: updatedFormData["Middle Name"] || "",
         last_name: updatedFormData["Last Name"] || "",
+        full_name: updatedFormData["Full Name"] || "",
         suffix: updatedFormData["Suffix"] || "",
         birthday: updatedFormData["Date Of Birth"] || null,
         age: updatedFormData["Age"] || 0,
@@ -390,7 +392,6 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         state: updatedFormData["State"] || "",
         zip: updatedFormData["ZIP Code"] || "",
       };
-      console.log("Sending personal info to parent:", personalInfoToSend);
       onPersonalInfoChange(personalInfoToSend);
     }
   };
@@ -401,7 +402,6 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
       };
       const result = await getStateProductAvailability(params);
       if (result) {
-        console.log("My_result", result);
         // setProductsInformation(result);
       }
     } catch (error) {
@@ -414,7 +414,7 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
     Gender: ["Male", "Female", "Other"],
   };
 
-   const handleExistingClientChange = (event, selectedClient) => {
+  const handleExistingClientChange = (event, selectedClient) => {
     if (selectedClient) {
       const fieldToDataKeyMap = {
         Salutation: "Salutation",
@@ -478,7 +478,6 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
           address: updatedData["Residence Address"] || "",
           state: updatedData["State"] || "",
         };
-        console.log("Sending personal info to parent:", personalInfoToSend);
         onPersonalInfoChange(personalInfoToSend);
       }
     } else {
@@ -486,7 +485,7 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
     }
   };
 
-
+  //==========================
   // const handleExistingClientChange = (event, selectedClient) => {
   //   if (selectedClient) {
   //     const fieldToDataKeyMap = {
@@ -537,15 +536,12 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
   //         birthday: updatedData["Date Of Birth"] || null,
   //         age: updatedData["Age"] || null,
   //       };
-  //       console.log("Sending personal info to parent:", personalInfoToSend);
   //       onPersonalInfoChange(personalInfoToSend);
   //     }
   //   } else {
   //     setFormData({});
   //   }
   // };
-
-
   const renderField = (field) => {
     // Special handling for the Residence Address field
     if (field.label === "Residence Address") {
@@ -827,16 +823,16 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         sx={{
           width: "100%",
           pt: 2,
-          pb: 4, // Add bottom padding to ensure scroll detection works
-          minHeight: "calc(100vh - 250px)", // Ensure minimum height for scrolling
+          // pb: 4,
+          // minHeight: "calc(100vh - 250px)",
         }}
       >
         <Autocomplete
           disablePortal
           options={contactListData}
-           value={selectedClient}
+          value={selectedClient}
           getOptionLabel={(option) => option.FullName || ""}
-          // onChange={handleExistingClientChange}
+          //onChange={handleExistingClientChange}
           onChange={(event, newValue) => {
             setSelectedClient(newValue);
             handleExistingClientChange(event, newValue);
@@ -850,62 +846,6 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
         <Divider>
           <Chip label="OR" size="small" />
         </Divider>
-
-        {/* <Grid container spacing={2}>
-          {Object.entries(fieldCategories).map(([category, labels]) => (
-            <Grid
-              key={category}
-              item
-              xs={12}
-              md={
-                category === "Address Details" ||
-                category === "Contact Information"
-                  ? 6
-                  : 12
-              }
-            >
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Avatar
-                  sx={{
-                    p: 1,
-                    mr: 1,
-                    width: 40,
-                    height: 40,
-                    bgcolor: "#129fd4",
-                  }}
-                >
-                  {categoryIcons[category]}
-                </Avatar>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 500,
-                    color: "#585858",
-                    wordBreak: "break-all",
-                  }}
-                >
-                  {category}
-                </Typography>
-              </Box>
-
-              <Grid container spacing={2}>
-                {labels.map((label) => {
-                  const field = IllustrationField.find(
-                    (f) => f.label === label
-                  );
-                  return (
-                    field && (
-                      <Grid item xs={12} key={field.label}>
-                        {renderField(field)}
-                      </Grid>
-                    )
-                  );
-                })}
-              </Grid>
-            </Grid>
-          ))}
-        </Grid> */}
-
         {/* ========================== */}
 
         {Object.entries(fieldCategories).map(([category, labels]) => (
@@ -952,7 +892,7 @@ function IllustrationPersonalInfo({ handleStateChange, onPersonalInfoChange, aut
           </Box>
         ))}
         {/* Add extra space at bottom to ensure scroll detection */}
-        <Box sx={{ height: 150 }} />
+        {/* <Box sx={{ height: 150 }} /> */}
       </Box>
     </>
   );

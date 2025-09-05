@@ -41,6 +41,303 @@ import {
   getWithdrawalTypeDetails,
   getStateProductAvailability,
 } from "../../queries/IllustrationQueries";
+
+// Local calculation classes
+class LocalMygaCalculator {
+  constructor(clientData, constants) {
+    this.clientData = clientData;
+    this.constants = constants;
+    this.clientAge = dayjs().diff(dayjs(clientData.birthday), 'year');
+    this.premium = clientData.premium;
+    this.firstTermYears = clientData.first_term;
+    this.secondTermYears = clientData.second_term || 0;
+    this.withdrawalType = clientData.withdrawal_type;
+    this.withdrawalAmount = clientData.withdrawal_amount;
+    this.withdrawalFromYear = clientData.withdrawal_from_year;
+    this.withdrawalToYear = clientData.withdrawal_to_year;
+    this.frequency = clientData.frequency;
+  }
+
+  formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(value);
+  }
+
+  calculate() {
+    const totalYears = this.firstTermYears + this.secondTermYears;
+    const data = [];
+    const accumulationValues = [];
+    const surrenderValues = [];
+    const withdrawals = [];
+    
+    let currentValue = this.premium;
+    
+    for (let year = 1; year <= totalYears; year++) {
+      const age = this.clientAge + year;
+      
+      // Apply interest rate based on term
+      const interestRate = year <= this.firstTermYears 
+        ? (this.constants.year_rates[year] || this.constants.mgir)
+        : this.constants.mgir;
+      
+      // Calculate interest
+      currentValue *= (1 + interestRate);
+      
+      // Calculate withdrawal
+      let yearlyWithdrawal = 0;
+      if (this.withdrawalType !== 'none' && 
+          year >= this.withdrawalFromYear && 
+          year <= this.withdrawalToYear) {
+        if (this.withdrawalType === 'fixed') {
+          yearlyWithdrawal = this.withdrawalAmount;
+        } else if (this.withdrawalType === 'percentage') {
+          yearlyWithdrawal = currentValue * (this.withdrawalAmount / 100);
+        }
+        
+        // Apply free withdrawal limits
+        const freeWithdrawalLimit = currentValue * (this.constants.free_wd[year] || 0);
+        const excessWithdrawal = Math.max(0, yearlyWithdrawal - freeWithdrawalLimit);
+        
+        // Subtract withdrawal from current value
+        currentValue -= yearlyWithdrawal;
+        
+        // Apply penalty for excess withdrawal if applicable
+        if (excessWithdrawal > 0 && this.constants.surrender_charges[year]) {
+          const penalty = excessWithdrawal * this.constants.surrender_charges[year];
+          currentValue -= penalty;
+        }
+      }
+      
+      // Calculate surrender value
+      const surrenderCharge = this.constants.surrender_charges[year] || 0;
+      const surrenderValue = Math.max(0, currentValue * (1 - surrenderCharge));
+      
+      accumulationValues.push(currentValue);
+      surrenderValues.push(surrenderValue);
+      withdrawals.push(yearlyWithdrawal);
+      
+      data.push([
+        year,
+        age,
+        this.formatCurrency(this.premium),
+        this.formatCurrency(yearlyWithdrawal),
+        this.formatCurrency(currentValue),
+        this.formatCurrency(surrenderValue)
+      ]);
+    }
+    
+    return {
+      status: 'success',
+      illustration_calc_data: {
+        data: data,
+        durations: totalYears,
+        accumulation_value_at_maturity: [this.formatCurrency(accumulationValues[accumulationValues.length - 1])],
+        complete_surrender_values: surrenderValues.map(sv => this.formatCurrency(sv)),
+        mgir: (this.constants.mgir * 100).toFixed(2) + '%',
+        term_1_rate: (this.constants.mgir * 100).toFixed(2) + '%',
+        term_1_surrender_rates: Object.keys(this.constants.surrender_charges)
+          .slice(0, this.firstTermYears)
+          .map(year => (this.constants.surrender_charges[parseInt(year)] * 100).toFixed(2) + '%'),
+        age: this.clientAge
+      }
+    };
+  }
+}
+
+class LocalFiaCalculator {
+  constructor(clientData, constants, glwbConstants) {
+    this.clientData = clientData;
+    this.constants = constants;
+    this.glwbConstants = glwbConstants;
+    this.clientAge = dayjs().diff(dayjs(clientData.birthday), 'year');
+    this.premium = clientData.premium;
+    this.firstTermYears = clientData.first_term;
+    this.withdrawalType = clientData.withdrawal_type;
+    this.withdrawalAmount = clientData.withdrawal_amount;
+    this.withdrawalFromYear = clientData.withdrawal_from_year;
+    this.withdrawalToYear = clientData.withdrawal_to_year;
+    this.frequency = clientData.frequency;
+    
+    // Index allocations (convert percentages to decimals)
+    this.ptpWCapRate = (clientData.ptp_w_cap_rate || 0) / 100;
+    this.ptpWPartRate500 = (clientData.ptp_w_participation_rate_500 || 0) / 100;
+    this.ptpWPartRateMarc5 = (clientData.ptp_w_participation_rate_marc5 || 0) / 100;
+    this.ptpWPartRateTca = (clientData.ptp_w_participation_rate_tca || 0) / 100;
+    this.fixedAccount = (clientData.fixed_interest_account || 0) / 100;
+    
+    this.glwb = clientData.glwb || false;
+    this.glwbActivationAge = clientData.glwb_activation_age || 65;
+  }
+
+  formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(value);
+  }
+
+  // Simulate index performance (simplified)
+  getIndexReturn(year, indexType) {
+    // Simplified index returns - in real implementation, this would use historical data
+    const baseReturns = {
+      'ptp_w_cap': Math.min(0.06, Math.random() * 0.12), // Capped at 6%
+      'ptp_w_500': Math.random() * 0.15 * 0.85, // 85% participation
+      'ptp_w_marc5': Math.random() * 0.12 * 0.80, // 80% participation
+      'ptp_w_tca': Math.random() * 0.10 * 0.75, // 75% participation
+      'fixed': 0.03 // 3% fixed
+    };
+    return baseReturns[indexType] || 0;
+  }
+
+  calculate() {
+    const totalYears = this.firstTermYears;
+    const data = [];
+    const accumulationValues = [];
+    const surrenderValues = [];
+    const withdrawals = [];
+    
+    let currentValue = this.premium * (1 + this.constants.premium_bonus); // Apply premium bonus
+    
+    for (let year = 1; year <= totalYears; year++) {
+      const age = this.clientAge + year;
+      
+      // Calculate weighted index return
+      const indexReturns = {
+        'ptp_w_cap': this.getIndexReturn(year, 'ptp_w_cap'),
+        'ptp_w_500': this.getIndexReturn(year, 'ptp_w_500'),
+        'ptp_w_marc5': this.getIndexReturn(year, 'ptp_w_marc5'),
+        'ptp_w_tca': this.getIndexReturn(year, 'ptp_w_tca'),
+        'fixed': this.getIndexReturn(year, 'fixed')
+      };
+      
+      const weightedReturn = 
+        (indexReturns['ptp_w_cap'] * this.ptpWCapRate) +
+        (indexReturns['ptp_w_500'] * this.ptpWPartRate500) +
+        (indexReturns['ptp_w_marc5'] * this.ptpWPartRateMarc5) +
+        (indexReturns['ptp_w_tca'] * this.ptpWPartRateTca) +
+        (indexReturns['fixed'] * this.fixedAccount);
+      
+      // Apply return to current value
+      currentValue *= (1 + weightedReturn);
+      
+      // Calculate withdrawal
+      let yearlyWithdrawal = 0;
+      if (this.withdrawalType !== 'none' && 
+          year >= this.withdrawalFromYear && 
+          year <= this.withdrawalToYear) {
+        if (this.withdrawalType === 'fixed') {
+          yearlyWithdrawal = this.withdrawalAmount;
+        } else if (this.withdrawalType === 'percentage') {
+          yearlyWithdrawal = currentValue * (this.withdrawalAmount / 100);
+        }
+        
+        // Apply free withdrawal limits
+        const freeWithdrawalLimit = currentValue * this.constants.free_total_wd;
+        const excessWithdrawal = Math.max(0, yearlyWithdrawal - freeWithdrawalLimit);
+        
+        // Subtract withdrawal from current value
+        currentValue -= yearlyWithdrawal;
+        
+        // Apply penalty for excess withdrawal if applicable
+        if (excessWithdrawal > 0 && this.constants.surrender_charges[year.toString()]) {
+          const penalty = excessWithdrawal * this.constants.surrender_charges[year.toString()];
+          currentValue -= penalty;
+        }
+      }
+      
+      // Calculate surrender value
+      const surrenderCharge = this.constants.surrender_charges[year.toString()] || 0;
+      const surrenderValue = Math.max(0, currentValue * (1 - surrenderCharge));
+      
+      accumulationValues.push(currentValue);
+      surrenderValues.push(surrenderValue);
+      withdrawals.push(yearlyWithdrawal);
+      
+      data.push([
+        year,
+        age,
+        this.formatCurrency(this.premium),
+        this.formatCurrency(yearlyWithdrawal),
+        this.formatCurrency(currentValue),
+        this.formatCurrency(surrenderValue)
+      ]);
+    }
+    
+    return {
+      status: 'success',
+      illustration_calc_data: {
+        data: data,
+        durations: totalYears,
+        accumulation_value_at_maturity: [this.formatCurrency(accumulationValues[accumulationValues.length - 1])],
+        complete_surrender_values: surrenderValues.map(sv => this.formatCurrency(sv)),
+        premium_bonus: (this.constants.premium_bonus * 100).toFixed(2) + '%',
+        fixed_rate: (this.constants.fixed_rate * 100).toFixed(2) + '%',
+        term_1_surrender_rates: Object.keys(this.constants.surrender_charges)
+          .map(year => (this.constants.surrender_charges[year] * 100).toFixed(2) + '%'),
+        age: this.clientAge,
+        index_allocations: {
+          ptp_w_cap_rate: (this.ptpWCapRate * 100).toFixed(2) + '%',
+          ptp_w_participation_rate_500: (this.ptpWPartRate500 * 100).toFixed(2) + '%',
+          ptp_w_participation_rate_marc5: (this.ptpWPartRateMarc5 * 100).toFixed(2) + '%',
+          ptp_w_participation_rate_tca: (this.ptpWPartRateTca * 100).toFixed(2) + '%',
+          fixed_interest_account: (this.fixedAccount * 100).toFixed(2) + '%'
+        }
+      }
+    };
+  }
+}
+
+// Default constants
+const DEFAULT_MYGA_CONSTANTS = {
+  mgir: 0.045, // 4.5%
+  free_total_wd: 0.10, // 10%
+  surrender_charges: {
+    1: 0.08, 2: 0.07, 3: 0.06, 4: 0.05, 5: 0.04,
+    6: 0.03, 7: 0.02, 8: 0.01, 9: 0.00, 10: 0.00
+  },
+  free_wd: {
+    1: 0.00, 2: 0.10, 3: 0.10, 4: 0.10, 5: 0.10,
+    6: 0.10, 7: 0.10, 8: 0.10, 9: 0.10, 10: 0.10
+  },
+  year_rates: {
+    1: 0.055, 2: 0.050, 3: 0.048, 4: 0.046, 5: 0.045
+  }
+};
+
+const DEFAULT_FIA_CONSTANTS = {
+  premium_bonus: 0.10, // 10% premium bonus
+  premium_bonus_recapture: {
+    '1': 0.10, '2': 0.09, '3': 0.08, '4': 0.07, '5': 0.06,
+    '6': 0.05, '7': 0.04, '8': 0.03, '9': 0.02, '10': 0.01
+  },
+  free_total_wd: 0.10, // 10% free withdrawal
+  fixed_rate: 0.03, // 3% fixed rate
+  index_account_cap_part: {
+    ptp_w_cap_rate: 0.06, // 6% cap
+    ptp_w_part_rate_500: 0.85, // 85% participation
+    ptp_w_part_rate_marc5: 0.80, // 80% participation
+    ptp_w_part_rate_tca: 0.75 // 75% participation
+  },
+  surrender_charges: {
+    '1': 0.09, '2': 0.08, '3': 0.07, '4': 0.06, '5': 0.05,
+    '6': 0.04, '7': 0.03, '8': 0.02, '9': 0.01, '10': 0.00
+  },
+  free_wd: {
+    '1': 0.10, '2': 0.10, '3': 0.10, '4': 0.10, '5': 0.10,
+    '6': 0.10, '7': 0.10, '8': 0.10, '9': 0.10, '10': 0.10
+  }
+};
+
+const DEFAULT_GLWB_CONSTANTS = {
+  benefit_base_bonus: 0.05, // 5% benefit base bonus
+  rider_charge: 0.0095, // 0.95% rider charge
+  rollup: 0.05, // 5% rollup
+  rollup_period: 10 // 10 years
+};
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -274,7 +571,24 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
         glwb_activation_age: Number(grid.glwbActivationAge) || 0,
         joint_indicator: grid.jointIndicator === "Joint",
       };
-      console.log("FIA_Final_Params", params);
+      console.log("FIA_Final_Params (Local Calculation)", params);
+      
+      // Use local calculation instead of API call
+      const calculator = new LocalFiaCalculator(params, DEFAULT_FIA_CONSTANTS, DEFAULT_GLWB_CONSTANTS);
+      const result = calculator.calculate();
+      
+      if (result) {
+        // Update individual grid's calculation result instead of shared state
+        const updatedGrids = [...compareGrids];
+        updatedGrids[index] = {
+          ...updatedGrids[index],
+          calculationResult: result,
+        };
+        setCompareGrids(updatedGrids);
+      }
+      
+      // Comment out API call for future use
+      /*
       const result = await getFIACalc(params);
       if (result) {
         // Update individual grid's calculation result instead of shared state
@@ -285,6 +599,7 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
         };
         setCompareGrids(updatedGrids);
       }
+      */
     } catch (error) {
       console.error(error);
     }
@@ -311,7 +626,24 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
         glwb_activation_age: Number(grid.glwbActivationAge) || 0,
         joint_indicator: grid.jointIndicator === "Joint",
       };
-      console.log("MYGA_FinalParams", params);
+      console.log("MYGA_FinalParams (Local Calculation)", params);
+      
+      // Use local calculation instead of API call
+      const calculator = new LocalMygaCalculator(params, DEFAULT_MYGA_CONSTANTS);
+      const result = calculator.calculate();
+      
+      if (result) {
+        // Update individual grid's calculation result instead of shared state
+        const updatedGrids = [...compareGrids];
+        updatedGrids[index] = {
+          ...updatedGrids[index],
+          calculationResult: result,
+        };
+        setCompareGrids(updatedGrids);
+      }
+      
+      // Comment out API call for future use
+      /*
       const result = await getMYGACalc(params);
       if (result) {
         // Update individual grid's calculation result instead of shared state
@@ -322,6 +654,7 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
         };
         setCompareGrids(updatedGrids);
       }
+      */
     } catch (error) {
       console.error(error);
     }
@@ -522,7 +855,7 @@ function IllustrationProductsInfo({ selectedState, personalInfo }) {
                       minHeight: `${compareGrids.length <= 2 && fullViewIndex === index && "calc(100vh - 330px)"}`,
                       overflowY: "auto",
                       position: "relative",
-                      height: "calc(100vh - 320px)",
+                      height: "calc(100vh - 380px)",
                     }}
                   >
                     <Grid container spacing={3}>

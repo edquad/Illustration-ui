@@ -33,6 +33,7 @@ function IllustrationHeaderInfo({ handleBasicInfo }) {
           gap: 2,
           justifyContent: "center",
           alignItems: "center",
+          flexWrap: "wrap",
         }}
       >
         <TextField

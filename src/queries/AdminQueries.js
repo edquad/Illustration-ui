@@ -96,3 +96,28 @@ export const deleteTerm = async (id) => {
 export const toggleTermStatus = async (id, isActive) => {
   return await putRequest(`${config.baseURL}api/admin/terms/${id}/toggle-status`, { isActive });
 };
+
+// Withdrawal Type API functions
+export const getAllWithdrawalTypes = async () => {
+  return await getRequest(`${config.baseURL}api/admin/withdrawal-types`);
+};
+
+export const getWithdrawalTypeById = async (id) => {
+  return await getRequest(`${config.baseURL}api/admin/withdrawal-types/${id}`);
+};
+
+export const createWithdrawalType = async (withdrawalTypeData) => {
+  return await postRequest(`${config.baseURL}api/admin/withdrawal-types`, withdrawalTypeData);
+};
+
+export const updateWithdrawalType = async (id, withdrawalTypeData) => {
+  return await putRequest(`${config.baseURL}api/admin/withdrawal-types/${id}`, withdrawalTypeData);
+};
+
+export const deleteWithdrawalType = async (id) => {
+  return await deleteRequest(`${config.baseURL}api/admin/withdrawal-types/${id}`);
+};
+
+export const toggleWithdrawalTypeStatus = async (id, isActive) => {
+  return await putRequest(`${config.baseURL}api/admin/withdrawal-types/${id}/toggle-status`, { isActive });
+};

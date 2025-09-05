@@ -34,6 +34,7 @@ import {
   ToggleOn,
 } from "@mui/icons-material";
 import ProductForm from "../components/admin/ProductForm";
+import WithdrawalTypeForm from "../components/admin/WithdrawalTypeForm";
 import {
   getAllProducts,
   createProduct,
@@ -45,6 +46,11 @@ import {
   updateTerm,
   deleteTerm,
   toggleTermStatus,
+  getAllWithdrawalTypes,
+  createWithdrawalType,
+  updateWithdrawalType,
+  deleteWithdrawalType,
+  toggleWithdrawalTypeStatus,
 } from "../queries/AdminQueries";
 
 const Admin = () => {
@@ -67,6 +73,15 @@ const Admin = () => {
     TERM_DETAILS_VALUE: "",
     IS_ACTIVE: true,
   });
+
+  // Withdrawal Type state
+  const [withdrawalTypes, setWithdrawalTypes] = useState([]);
+  const [withdrawalTypeFormOpen, setWithdrawalTypeFormOpen] = useState(false);
+  const [selectedWithdrawalType, setSelectedWithdrawalType] = useState(null);
+  const [withdrawalTypeFormMode, setWithdrawalTypeFormMode] = useState("create");
+  const [withdrawalTypeDeleteDialogOpen, setWithdrawalTypeDeleteDialogOpen] = useState(false);
+  const [withdrawalTypeToDelete, setWithdrawalTypeToDelete] = useState(null);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -78,7 +93,7 @@ const Admin = () => {
     try {
       setLoading(true);
       setError("");
-      const data = await getAllProducts();
+      const data = await getAllProducts(); // Access token automatically included!
       setProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -311,9 +326,154 @@ const Admin = () => {
     }
   };
 
+  // Withdrawal Type functions
+  const fetchWithdrawalTypes = async () => {
+    try {
+      const response = await getAllWithdrawalTypes();
+      setWithdrawalTypes(response.data || response);
+    } catch (error) {
+      console.error("Error fetching withdrawal types:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to fetch withdrawal types",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleCreateWithdrawalType = async (withdrawalTypeData) => {
+    try {
+      setActionLoading("create");
+      await createWithdrawalType(withdrawalTypeData);
+      setSnackbar({
+        open: true,
+        message: "Withdrawal type created successfully",
+        severity: "success",
+      });
+      fetchWithdrawalTypes();
+      setWithdrawalTypeFormOpen(false);
+      setSelectedWithdrawalType(null);
+    } catch (error) {
+      console.error("Error creating withdrawal type:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to create withdrawal type",
+        severity: "error",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUpdateWithdrawalType = async (withdrawalTypeData) => {
+    try {
+      setActionLoading("update");
+      await updateWithdrawalType(selectedWithdrawalType.WITHDRAWAL_TYPE_ID, withdrawalTypeData);
+      setSnackbar({
+        open: true,
+        message: "Withdrawal type updated successfully",
+        severity: "success",
+      });
+      fetchWithdrawalTypes();
+      setWithdrawalTypeFormOpen(false);
+      setSelectedWithdrawalType(null);
+    } catch (error) {
+      console.error("Error updating withdrawal type:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to update withdrawal type",
+        severity: "error",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeleteWithdrawalType = async () => {
+    try {
+      setActionLoading(withdrawalTypeToDelete?.WITHDRAWAL_TYPE_ID);
+      await deleteWithdrawalType(withdrawalTypeToDelete.WITHDRAWAL_TYPE_ID);
+      setSnackbar({
+        open: true,
+        message: "Withdrawal type deleted successfully",
+        severity: "success",
+      });
+      fetchWithdrawalTypes();
+      setWithdrawalTypeDeleteDialogOpen(false);
+      setWithdrawalTypeToDelete(null);
+    } catch (error) {
+      console.error("Error deleting withdrawal type:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to delete withdrawal type",
+        severity: "error",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleToggleWithdrawalTypeStatus = async (withdrawalType) => {
+    try {
+      setActionLoading(withdrawalType.WITHDRAWAL_TYPE_ID);
+      await toggleWithdrawalTypeStatus(withdrawalType.WITHDRAWAL_TYPE_ID, !withdrawalType.IS_ACTIVE);
+      setSnackbar({
+        open: true,
+        message: "Withdrawal type status updated successfully",
+        severity: "success",
+      });
+      fetchWithdrawalTypes();
+    } catch (error) {
+      console.error("Error toggling withdrawal type status:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to update withdrawal type status",
+        severity: "error",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleEditWithdrawalType = (withdrawalType) => {
+    setSelectedWithdrawalType(withdrawalType);
+    setWithdrawalTypeFormMode("edit");
+    setWithdrawalTypeFormOpen(true);
+  };
+
+  const handleAddWithdrawalType = () => {
+    setSelectedWithdrawalType(null);
+    setWithdrawalTypeFormMode("create");
+    setWithdrawalTypeFormOpen(true);
+  };
+
+  const handleWithdrawalTypeFormClose = () => {
+    setWithdrawalTypeFormOpen(false);
+    setSelectedWithdrawalType(null);
+  };
+
+  const handleWithdrawalTypeFormSubmit = (withdrawalTypeData) => {
+    if (withdrawalTypeFormMode === "create") {
+      handleCreateWithdrawalType(withdrawalTypeData);
+    } else {
+      handleUpdateWithdrawalType(withdrawalTypeData);
+    }
+  };
+
+  const openWithdrawalTypeDeleteDialog = (withdrawalType) => {
+    setWithdrawalTypeToDelete(withdrawalType);
+    setWithdrawalTypeDeleteDialogOpen(true);
+  };
+
+  const closeWithdrawalTypeDeleteDialog = () => {
+    setWithdrawalTypeDeleteDialogOpen(false);
+    setWithdrawalTypeToDelete(null);
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchTerms();
+    fetchWithdrawalTypes();
   }, []);
 
   return (
@@ -527,6 +687,125 @@ const Admin = () => {
           </Table>
         </TableContainer>
       </Paper>
+
+      {/* Withdrawal Type Management Section */}
+      <Box sx={{ mt: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Typography variant="h4" component="h1" gutterBottom>
+            Withdrawal Type Management
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={handleAddWithdrawalType}
+          >
+            ADD WITHDRAWAL TYPE
+          </Button>
+        </Box>
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Withdrawal Type Value</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Created At</TableCell>
+                <TableCell>Updated At</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {withdrawalTypes.map((withdrawalType) => (
+                <TableRow key={withdrawalType.WITHDRAWAL_TYPE_ID}>
+                  <TableCell>{withdrawalType.WITHDRAWAL_TYPE_ID}</TableCell>
+                  <TableCell>{withdrawalType.WITHDRAWAL_TYPE_VALUE}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={withdrawalType.IS_ACTIVE ? "Active" : "Inactive"}
+                      color={withdrawalType.IS_ACTIVE ? "success" : "error"}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {new Date(withdrawalType.CREATED_AT).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(withdrawalType.UPDATED_AT).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={() => handleToggleWithdrawalTypeStatus(withdrawalType)}
+                      color={withdrawalType.IS_ACTIVE ? "success" : "error"}
+                      disabled={actionLoading === withdrawalType.WITHDRAWAL_TYPE_ID}
+                    >
+                      {withdrawalType.IS_ACTIVE ? <ToggleOn /> : <ToggleOff />}
+                    </IconButton>
+                    <IconButton
+                      onClick={() => handleEditWithdrawalType(withdrawalType)}
+                      color="primary"
+                      disabled={actionLoading === withdrawalType.WITHDRAWAL_TYPE_ID}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => openWithdrawalTypeDeleteDialog(withdrawalType)}
+                      color="error"
+                      disabled={actionLoading === withdrawalType.WITHDRAWAL_TYPE_ID}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+
+      {/* Withdrawal Type Form Dialog */}
+      <WithdrawalTypeForm
+        open={withdrawalTypeFormOpen}
+        mode={withdrawalTypeFormMode}
+        withdrawalType={selectedWithdrawalType}
+        onSubmit={handleWithdrawalTypeFormSubmit}
+        onClose={handleWithdrawalTypeFormClose}
+        loading={actionLoading === "create" || actionLoading === "update"}
+      />
+
+      {/* Withdrawal Type Delete Confirmation Dialog */}
+      <Dialog
+        open={withdrawalTypeDeleteDialogOpen}
+        onClose={closeWithdrawalTypeDeleteDialog}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete the withdrawal type "{withdrawalTypeToDelete?.WITHDRAWAL_TYPE_VALUE}"?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeWithdrawalTypeDeleteDialog}>Cancel</Button>
+          <Button
+            onClick={handleDeleteWithdrawalType}
+            color="error"
+            variant="contained"
+            disabled={actionLoading === withdrawalTypeToDelete?.WITHDRAWAL_TYPE_ID}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Term Dialog */}
       <Dialog open={termDialogOpen} onClose={handleTermDialogClose} maxWidth="sm" fullWidth>
